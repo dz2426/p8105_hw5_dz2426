@@ -46,7 +46,7 @@ x = vector("list", length = 5)
 q1_f = function(x) {
   # If input is numeric, replace value with the mean of this column
   if (is.numeric(x)) {
-  replace(x, is.na(x), mean(x, na.rm = TRUE))
+    replace(x, is.na(x), mean(x, na.rm = TRUE))
   } 
   # If input is not numeric, replace value with "virginica"
   else if (!is.numeric(x)) {
@@ -70,14 +70,28 @@ iris_without_missing = tibble(
 
 # Problem 2
 ```{r}
-# Dataframe containing all file names
-file.names = list.files("./data/", pattern = ".csv")
-for (i in 1:length(file.names)) {
-  files = read.csv(file.names[i])
-  output_df = map(files[i], bind_rows)
-}
- write.csv(out.file, file = "cand_Brazil.txt", sep = ";", 
-             row.names = FALSE, qmethod = "double",fileEncoding = "windows-1252")
-
+# Create a dataframe first including all file names
+q2_df = tibble(
+  file_names = list.files(path = './data/')
+) %>% 
+  # Read in data using map function
+  mutate(name = map(.x = str_c("./data/", file_names), 
+                    ~read_csv(.x))) %>% 
+  # Expand dataset completely
+  unnest() %>% 
+  # Separate variable "file_names" into two variables "group" and "subject id"
+  separate(file_names, into = c("group", "subject_id"), sep = "_", remove = F) %>% 
+  # Tidy weekly observation data in a pivot_longer format
+  pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    values_to = "observation") %>% 
+  # Tidy data
+  mutate(week = str_replace(week, "week_", ""),
+         file_names = str_replace(file_names, ".csv", ""),
+         subject_id = str_replace(subject_id, ".csv", ""),
+         group = str_replace(group, "con", "control"),
+         group = str_replace(group, "exp", "experiment")
+  )
 ```
 
