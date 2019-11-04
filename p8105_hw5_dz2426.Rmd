@@ -64,7 +64,11 @@ iris_without_missing = tibble(
   petal_length = round(x$petal_length, digits = 1),
   petal_width = round(x$sepal_width, digits = 1),
   species = x$species
-)
+) %>% 
+  # Show the first 22 rows which indicate the success of filling NA
+  head(22)
+
+knitr::kable(iris_without_missing, caption = "Table 1: First 22 rows of Iris dataset")
 
 ```
 
