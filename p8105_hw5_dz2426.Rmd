@@ -68,3 +68,16 @@ iris_without_missing = tibble(
 
 ```
 
+# Problem 2
+```{r}
+# Dataframe containing all file names
+file.names = list.files("./data/", pattern = ".csv")
+for (i in 1:length(file.names)) {
+  files = read.csv(file.names[i])
+  output_df = map(files[i], bind_rows)
+}
+ write.csv(out.file, file = "cand_Brazil.txt", sep = ";", 
+             row.names = FALSE, qmethod = "double",fileEncoding = "windows-1252")
+
+```
+
