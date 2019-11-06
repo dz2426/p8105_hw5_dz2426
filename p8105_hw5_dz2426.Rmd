@@ -140,16 +140,22 @@ lm_rerun = rerun(10000, sim_regression(n = 30, beta1 = 0)) %>%
 ```
 
 ```{r}
-
-output = vector("list", length = 7)
-for (i in 1:7) {
-  output[[i]] = rerun(30, sim_regression(30, 2, beta1 = i - 1))
-}
-
-sim_results = bind_rows(output)
+# Map all 6 beta1 values into the output
+sim_result_beta1 = 
+  tibble(beta1s = c(1:6)) %>% 
+  mutate(
+    output_list = map(.x = beta1s, ~rerun(30, sim_regression(n = 30, beta1 = .x))), 
+    output_df = map(output_list, bind_rows)
+  ) %>% 
+  select(-output_list) %>% 
+  unnest(output_df) %>% 
+  janitor::clean_names() %>% 
+  filter(term == "x_i1") %>% 
+  select(beta1s, term, estimate, p_value)
 ```
 
 ```{r}
-sim_results
+
 ```
+
 
