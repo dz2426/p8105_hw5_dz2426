@@ -108,10 +108,18 @@ q2_df %>%
   facet_grid(~group) +
   labs(x = "Week", 
        y = "Observation",
-       title = "Figure 1. Observations on each subject over time"
+       title = "Figure 1.1 Observations on each subject over time (two-panel)"
     ) +
   scale_color_discrete(name = "Subject ID") +
   theme(strip.text = element_text(size = 12, face = 'bold'))
+
+q2_df %>% 
+  ggplot(aes(x = week, y = observation, group = file_names, color = group)) +
+  geom_line() + 
+  labs(x = "Week", 
+       y = "Observation",
+       title = "Figure 1.2 Observations on each subject over time (combined)"
+    )
 ```
 
 **Comments:**  
@@ -141,9 +149,9 @@ lm_rerun = rerun(10000, sim_regression(n = 30, beta1 = 0)) %>%
 ```
 
 ```{r}
-# Map all 6 beta1 values into the output
+# Map all 7 beta1 values into the output
 sim_result_beta1s = 
-  tibble(beta1s = c(1:6)) %>% 
+  tibble(beta1s = c(0:6)) %>% 
   mutate(
     output_list = map(.x = beta1s, ~rerun(10000, sim_regression(n = 30, beta1 = .x))), 
     output_df = map(output_list, bind_rows)
@@ -169,16 +177,16 @@ q3_plot1 %>%
   ggplot(aes(x = beta1s, y = proportion)) + 
   geom_point() +
   geom_line() +
-  scale_x_continuous(breaks = seq(1, 6, by = 1)) +
+  scale_x_continuous(breaks = seq(0, 6, by = 1)) +
   labs(
-    x = "Beta1", y = "Power", 
+    x = "True β1", y = "Power", 
     title = "Figure 2. Association between effect size and power",
     caption = "Simulation iterations: 10000"
   )
 ```
 
 **Comments:**  
-The plot shows a positive association between the power of test and effect size. The power increases as the effect size increases.
+The plot shows a positive association between the power of test and effect size. The power of detecting false null hypothesis increases as the effect size increases.
 
 ```{r}
 q3_plot2 = sim_result_beta1s %>% 
@@ -205,17 +213,16 @@ ggplot(q3_plot2, aes(x = beta1s)) +
   geom_point(data = q3_plot3, aes(y = mean_beta1_hat)) +
   geom_line(data = q3_plot2, aes(y = mean_beta1_hat, color = 'All samples')) +
   geom_line(data = q3_plot3, aes(y = mean_beta1_hat, color = 'Samples with H0 rejected')) +
-  scale_x_continuous(breaks = seq(1, 6, by = 1)) +
-  scale_y_continuous(breaks = seq(1, 6, by = 0.2)) + 
+  scale_x_continuous(breaks = seq(0, 6, by = 1)) +
+  scale_y_continuous(breaks = seq(0, 6, by = 0.2)) + 
   labs(
-    x = "Beta1", y = "Average beta1 estimate", 
-    title = "Figure 3. Association between average beta1 estimate and true beta1",
+    x = "True β1", y = "Average β1 estimate", 
+    title = "Figure 3. Association between average β1 estimate and true β1",
     caption = "Simulation iterations: 10000"
   ) +
-  scale_colour_discrete(name = "line")
+  scale_colour_discrete(name = "Line:")
 ```
 
 **Comments:**
 The sample average of beta1 estimate across tests for which the null is rejected is approaching the true beta1 value as beta1 increases.  
-At small beta1 value, 
-
+At small beta1 value, the power of detecting false H0 is small and the average beta1 estimate has small sample sizes of which p-value<0.05. Thus, it has a larger deviation between average beta1 estimate and true beta1. As effect size increases, the power of detecting false H0 increases and the average beta1 estimate has larger sample sizes of which p-value < 0.05. Therefore, the estimate is approximately true beta1 when beta1 = 6.
