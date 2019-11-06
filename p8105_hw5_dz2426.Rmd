@@ -116,3 +116,40 @@ q2_df %>%
 **Comments:**  
 The spaghetti plot shows larger values for subjects in experimental group compared to those in control group. Furthermore, observations on experimental subjects indicated a positive trend over time, while subjects in control group did not show significant difference after 8 weeks.
 
+# Problem 3
+```{r}
+# Create linear model regression function
+sim_regression = function(n, beta0 = 2, beta1) {
+  
+  sim_data = tibble(
+    x_i1 = rnorm(n, mean = 0, sd = 1),
+    y_i = beta0 + beta1 * x_i1 + rnorm(n, 0, sqrt(50)) # standard error term~N[0, sqrt50]
+  )
+  
+  ls_fit = lm(y_i ~ x_i1, data = sim_data)
+  broom::tidy(ls_fit)
+}
+
+# Set beta1 = 0, and generate 10000 datasets from the model
+lm_rerun = rerun(10000, sim_regression(n = 30, beta1 = 0)) %>% 
+  bind_rows() %>% 
+  janitor::clean_names() %>% 
+  # select correct p_value
+  filter(term == "x_i1") %>% 
+  select(estimate, p_value)
+```
+
+```{r}
+
+output = vector("list", length = 7)
+for (i in 1:7) {
+  output[[i]] = rerun(30, sim_regression(30, 2, beta1 = i - 1))
+}
+
+sim_results = bind_rows(output)
+```
+
+```{r}
+sim_results
+```
+
