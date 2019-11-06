@@ -107,7 +107,7 @@ q2_df %>%
   facet_grid(~group) +
   labs(x = "Week", 
        y = "Observation",
-       title = "Observations on each subject over time",
+       title = "Figure 1. Observations on each subject over time",
        fill = "Subject ID"
     ) +
   theme(strip.text = element_text(size = 12, face = 'bold'))
@@ -141,7 +141,7 @@ lm_rerun = rerun(10000, sim_regression(n = 30, beta1 = 0)) %>%
 
 ```{r}
 # Map all 6 beta1 values into the output
-sim_result_beta1 = 
+sim_result_beta1s = 
   tibble(beta1s = c(1:6)) %>% 
   mutate(
     output_list = map(.x = beta1s, ~rerun(30, sim_regression(n = 30, beta1 = .x))), 
@@ -155,7 +155,27 @@ sim_result_beta1 =
 ```
 
 ```{r}
+q3_plot1 = sim_result_beta1s %>% 
+  group_by(beta1s) %>% 
+  # Count the number of cases when the null test was rejected or not
+  count(p_value < 0.05) %>% 
+  janitor::clean_names() %>%
+  mutate(proportion = n/sum(n)) %>% 
+  # Show only the proportion of times when null was rejected under each beta1
+  filter(p_value_0_05 == "TRUE")
 
+q3_plot1 %>% 
+  ggplot(aes(x = beta1s, y = proportion)) + 
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = seq(1, 6, by = 1)) +
+  labs(
+    x = "Beta1", y = "Power", 
+    title = "Figure 2. Association between effect size and power",
+    caption = "Simulation iterations: 10000"
+  )
 ```
 
+**Comments:**  
+The plot shows that the power of the test has a positive association with effect size. The positive gradient decreases as effect size increases.
 
