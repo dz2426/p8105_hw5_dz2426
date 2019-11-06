@@ -9,6 +9,7 @@ editor_options:
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(viridis)
+library(patchwork)
 
 knitr::opts_chunk$set(
   echo = TRUE,
@@ -107,9 +108,9 @@ q2_df %>%
   facet_grid(~group) +
   labs(x = "Week", 
        y = "Observation",
-       title = "Figure 1. Observations on each subject over time",
-       fill = "Subject ID"
+       title = "Figure 1. Observations on each subject over time"
     ) +
+  scale_color_discrete(name = "Subject ID") +
   theme(strip.text = element_text(size = 12, face = 'bold'))
 ```
 
@@ -187,18 +188,6 @@ q3_plot2 = sim_result_beta1s %>%
   select(beta1s, mean_beta1_hat) %>% 
   # Remove duplicated rows
   distinct()
-  
-q3_plot2 %>% 
-  ggplot(aes(x = beta1s, y = mean_beta1_hat)) +
-  geom_point() +
-  geom_line() +
-  scale_x_continuous(breaks = seq(1, 6, by = 1)) +
-  scale_y_continuous(breaks = seq(1, 6, by = 0.5)) + 
-  labs(
-    x = "Beta1", y = "Average beta1 estimate", 
-    title = "Figure 3. Association between average beta1 estimate and effect size",
-    caption = "Simulation iterations: 10000"
-  )
 ```
 
 ```{r}
@@ -209,6 +198,24 @@ q3_plot3 = sim_result_beta1s %>%
   mutate(mean_beta1_hat = mean(estimate)) %>% 
   select(beta1s, mean_beta1_hat) %>% 
   distinct()
-  
+
+# Combine two graphs on the sample plot
+ggplot(q3_plot2, aes(x = beta1s)) +
+  geom_point(data = q3_plot2, aes(y = mean_beta1_hat)) +
+  geom_point(data = q3_plot3, aes(y = mean_beta1_hat)) +
+  geom_line(data = q3_plot2, aes(y = mean_beta1_hat, color = 'All samples')) +
+  geom_line(data = q3_plot3, aes(y = mean_beta1_hat, color = 'Samples with H0 rejected')) +
+  scale_x_continuous(breaks = seq(1, 6, by = 1)) +
+  scale_y_continuous(breaks = seq(1, 6, by = 0.2)) + 
+  labs(
+    x = "Beta1", y = "Average beta1 estimate", 
+    title = "Figure 3. Association between average beta1 estimate and true beta1",
+    caption = "Simulation iterations: 10000"
+  ) +
+  scale_colour_discrete(name = "line")
 ```
+
+**Comments:**
+The sample average of beta1 estimate across tests for which the null is rejected is approaching the true beta1 value as beta1 increases.  
+At small beta1 value, 
 
